@@ -1,23 +1,18 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
+    <ui-header></ui-header>
     <router-view/>
   </div>
 </template>
 
 <script>
+  import uiHeader from './components/header'
 export default {
-  name: 'App'
+  name: 'App',
+  components:{uiHeader}
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+  @import './assets/css/normalize.css';
 </style>
