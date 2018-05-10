@@ -1,6 +1,6 @@
 <template>
     <div>
-      <canvas id="canvas" width="400px" height="400px"
+      <canvas id="canvas" :width="canvasWidth" :height="canvasHeight"
               @mousedown="canvasDown($event)"
               @mouseup="canvasUp($event)"
               @mousemove="canvasMove($event)"
@@ -25,6 +25,8 @@
   export default {
     data(){
       return {
+        canvasWidth:"400px",
+        canvasHeight:"400px",
         isMouseDown:false,  //只有当mouseDown为真时才开始绘制画布
         lastLoc:{x:0,y:0},  //记录上一次鼠标绘制的位置
         lastTimestamp:0,    //记录上一次鼠标绘制的时间
@@ -179,6 +181,7 @@
   #canvas{
     display:block;
     margin:0 auto;
+    cursor:pointer;
   }
   #controller{
     margin:0 auto;

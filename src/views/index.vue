@@ -37,8 +37,8 @@
   box-shadow:1px 2px 5px #efefef;
   text-align:center;
 }
-  .list li：hover{
-    box-shadow:2px 5px 10px #efefef;
-  }
+.list li:hover{
+  box-shadow:2px 5px 10px #efefef;
+}
 
 </style>
