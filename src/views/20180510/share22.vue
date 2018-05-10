@@ -4,17 +4,14 @@
               @mousedown="canvasDown($event)"
               @mouseup="canvasUp($event)"
               @mousemove="canvasMove($event)"
-              @touchstart="canvasDown($event)"
-              @touchend="canvasUp($event)"
-              @touchmove="canvasMove($event)"
               >您的浏览器不支持canvas</canvas>
       <div id="controller">
-        <div id="black_btn" class="color_btn color_btn_selected"></div>
-        <div id="blue_btn" class="color_btn"></div>
-        <div id="green_btn" class="color_btn"></div>
-        <div id="red_btn" class="color_btn"></div>
-        <div id="orange_btn" class="color_btn"></div>
-        <div id="yellow_btn" class="color_btn"></div>
+        <div id="black_btn"  class="color_btn color_btn_selected" @click="handleClickColor($event)"></div>
+        <div id="blue_btn" class="color_btn" @click="handleClickColor($event)"></div>
+        <div id="green_btn"  class="color_btn" @click="handleClickColor($event)"></div>
+        <div id="red_btn" class="color_btn" @click="handleClickColor($event)"></div>
+        <div id="orange_btn" class="color_btn" @click="handleClickColor($event)"></div>
+        <div id="yellow_btn" class="color_btn" @click="handleClickColor($event)"></div>
 
         <div id="clear_btn" class="op_btn" @click="clearCanvas($event)">清 除</div>
         <div class="clearfix"></div>
@@ -28,23 +25,23 @@
   export default {
     data(){
       return {
-        canvas:'',
-        isMouseDown:false,
-        lastLoc:{x:0,y:0},
-        lastTimestamp:0,
-        lastLineWidth:-1,
-        maxLineWidth:10,
-        minLineWidth:1,
-        maxStrokeV:10,
-        minStrokeV:0.1
+        isMouseDown:false,  //只有当mouseDown为真时才开始绘制画布
+        lastLoc:{x:0,y:0},  //记录上一次鼠标绘制的位置
+        lastTimestamp:0,    //记录上一次鼠标绘制的时间
+        lastLineWidth:-1,   //记录上一次萧条宽度
+        maxLineWidth:10,    //最大的绘制线条宽度
+        minLineWidth:1,     //最小的绘制线条宽度
+        maxStrokeV:10,      //最大笔触速度
+        minStrokeV:0.1,     //最小笔触速度
+        strokeColor:'black' //笔触的颜色
       }
     },
     methods:{
-      drawGrid(){
+      drawGrid(){//绘制背景
         let canvas = document.getElementById("canvas");
         let context = canvas.getContext("2d");
-        console.log(context);
-        console.log(canvasHeight);console.log(canvasWidth);
+        //console.log(context);
+        //console.log(canvasHeight);console.log(canvasWidth);
 
         context.save()  //保存当前环境的状态
 
@@ -58,6 +55,8 @@
         context.closePath() //创建从当前点回到起始点的路径
         context.lineWidth = 4 //设置或返回当前的线条宽度
         context.stroke() //绘制已定义的路径
+
+
 
         context.beginPath()
         context.moveTo(0,0)
@@ -78,16 +77,43 @@
         context.restore()  //返回之前保存过的路径状态和属性
       },
       beginStroke(point){
-        this.isMouseDown = true
+        this.isMouseDown = true //赋值为真，开始绘制
         //console.log("mouse down!")
-        this.lastLoc = this.windowToCanvas(point.x, point.y)
-        this.lastTimestamp = new Date().getTime();
+        this.lastLoc = this.windowToCanvas(point.x, point.y) //记录上一次鼠标绘制的位置
+        this.lastTimestamp = new Date().getTime(); //记录上一次鼠标绘制的时间
+      },
+      moveStroke(point){
+        let canvas = document.getElementById("canvas");
+        let context = canvas.getContext("2d");
+
+        let curLoc = this.windowToCanvas( point.x , point.y );
+        let curTimestamp = new Date().getTime();
+        let s = this.calcDistance( curLoc , this.lastLoc )
+        let t = curTimestamp - this.lastTimestamp
+
+        let lineWidth = this.calcLineWidth( t , s );
+
+        //draw
+        context.beginPath();
+        context.moveTo( this.lastLoc.x , this.lastLoc.y );
+        context.lineTo( curLoc.x , curLoc.y );
+
+        context.strokeStyle = this.strokeColor
+        context.lineWidth = lineWidth
+        context.lineCap = "round" //lineCap 属性设置或返回线条末端线帽的样式。butt	默认。向线条的每个末端添加平直的边缘 round	向线条的每个末端添加圆形线帽。square	向线条的每个末端添加正方形线帽
+        context.lineJoin = "round" //属性设置或返回所创建边角的类型，当两条线交汇时。bevel	创建斜角round	创建圆角。miter	默认。创建尖角。
+        context.stroke() //实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+
+        this.lastLoc = curLoc
+        this.lastTimestamp = curTimestamp
+        this.lastLineWidth = lineWidth
       },
       endStroke(){
         this.isMouseDown = false
       },
+
       canvasDown(e){
-        e.preventDefault()
+        e.preventDefault() //阻止鼠标的默认事件
         this.beginStroke( {x: e.clientX , y: e.clientY} )
       },
       canvasUp(e){
@@ -100,36 +126,10 @@
           this.moveStroke({x: e.clientX , y: e.clientY})
         }
       },
-      moveStroke(point){
 
-        let canvas = document.getElementById("canvas");
-        let context = canvas.getContext("2d");
-
-        var curLoc = this.windowToCanvas( point.x , point.y );
-        var curTimestamp = new Date().getTime();
-        var s = this.calcDistance( curLoc , this.lastLoc )
-        var t = curTimestamp - this.lastTimestamp
-
-        var lineWidth = this.calcLineWidth( t , s );
-
-        //draw
-        context.beginPath();
-        context.moveTo( this.lastLoc.x , this.lastLoc.y );
-        context.lineTo( curLoc.x , curLoc.y );
-
-        context.strokeStyle = this.strokeColor
-        context.lineWidth = lineWidth
-        context.lineCap = "round"
-        context.lineJoin = "round"
-        context.stroke()
-
-        this.lastLoc = curLoc
-        this.lastTimestamp = curTimestamp
-        this.lastLineWidth = lineWidth
-      },
       calcLineWidth( t , s ){
-        var v = s / t;
-        var resultLineWidth;
+        let v = s / t;
+        let resultLineWidth;
         if( v <= this.minStrokeV )
           resultLineWidth = this.maxLineWidth;
         else if ( v >= this.maxStrokeV )
@@ -147,16 +147,27 @@
         return Math.sqrt( (loc1.x - loc2.x)*(loc1.x - loc2.x) + (loc1.y - loc2.y)*(loc1.y - loc2.y) )
       },
       windowToCanvas( x , y ){
-        var bbox = canvas.getBoundingClientRect()
-        return {x:Math.round(x-bbox.left) , y:Math.round(y-bbox.top)}
+        let bbox = canvas.getBoundingClientRect() //获取画布的包围盒信息；getBoundingClientRect用于获得页面中某个元素的左，上，右和下分别相对浏览器视窗的位置。
+        return {x:Math.round(x-bbox.left) , y:Math.round(y-bbox.top)} //Math.round四舍五入将浮点变为为整数
       },
       clearCanvas(e){
+        //重绘背景画布
         let canvas = document.getElementById("canvas");
         let context = canvas.getContext("2d");
-
-        context.clearRect( 0 , 0 , canvasWidth, canvasHeight )
+        context.clearRect( 0 , 0 , canvasWidth, canvasHeight )  //clearRect() 方法清空给定矩形内的指定像素
         this.drawGrid();
       },
+      handleClickColor(e){
+          //console.log(e);
+          let sib =document.querySelectorAll('.color_btn');
+          console.log(sib.length)
+          for(let i=0,len=sib.length;i< len;i++){
+              sib[i].className="color_btn"
+          }
+          e.target.className ="color_btn color_btn_selected";
+          let color= window.getComputedStyle(e.target,null).backgroundColor;
+          this.strokeColor=color;
+      }
 
     },
     mounted(){
